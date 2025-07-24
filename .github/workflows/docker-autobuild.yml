@@ -1,0 +1,47 @@
+name: Docker Auto Build and Push
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Skin_Tone_Classification/API/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get version tag (short SHA + timestamp)
+        id: vars
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          TIMESTAMP=$(date +'%Y%m%d%H%M')
+          VERSION="auto-${SHORT_SHA}-${TIMESTAMP}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "::set-output name=version::$VERSION"
+
+      - name: Build Docker image
+        run: |
+          docker build -f Skin_Tone_Classification/API/Dockerfile \
+                       -t dvaltor/skin-tone-api:${{ env.VERSION }} \
+                       -t dvaltor/skin-tone-api:latest \
+                       Skin_Tone_Classification/API
+
+      - name: Push Docker image
+        run: |
+          docker push dvaltor/skin-tone-api:${{ env.VERSION }}
+          docker push dvaltor/skin-tone-api:latest
