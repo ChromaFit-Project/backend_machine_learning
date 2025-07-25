@@ -1,0 +1,22 @@
+name: Delete Old Docker Tags
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Runs every Sunday at 3 AM UTC
+  workflow_dispatch:      # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete older Docker tags using delete-dockerhub-tag-action
+        uses: vlaurin/action-delete-dockerhub-tag@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: dvaltor/skin-tone-api
+          keep_tags: latest,stable
+          keep_count: 5
+          untagged_only: false
+          dry_run: false
