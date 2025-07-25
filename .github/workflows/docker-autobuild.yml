@@ -11,6 +11,8 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
 
     steps:
       - name: Checkout code
@@ -36,10 +38,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -f Skin_Tone_Classification/API/Dockerfile \
-                       -t dvaltor/skin-tone-api:${{ env.VERSION }} \
-                       -t dvaltor/skin-tone-api:latest \
-                       Skin_Tone_Classification/API
+          docker build \
+            -f Skin_Tone_Classification/API/Dockerfile \
+            -t dvaltor/skin-tone-api:${{ env.VERSION }} \
+            -t dvaltor/skin-tone-api:latest \
+            Skin_Tone_Classification/API
 
       - name: Push Docker image
         run: |
