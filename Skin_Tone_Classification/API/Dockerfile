@@ -1,17 +1,32 @@
-# Use the official Python 3.11.3 slim image
-FROM python:3.11.3-slim
+# syntax=docker/dockerfile:1
 
-# Set the working directory inside the container
+ARG PYTHON_VERSION=3.11.3
+FROM python:${PYTHON_VERSION}-slim as base
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
-# Copy everything from your local folder into the container
+# Install OpenCV dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Efficient pip install (with BuildKit caching support)
+RUN --mount=type=cache,target=/root/.cache/pip \
+    --mount=type=bind,source=requirements.txt,target=requirements.txt \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy Models and Dataset folders
+COPY Models /app/Models
+COPY Dataset /app/Dataset
+
+# Copy main.py and any other app files
 COPY . .
 
-# Install required Python packages
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Expose the port your FastAPI app will run on (optional but good practice)
 EXPOSE 8080
 
-# Run the FastAPI app using Uvicorn
+# Run FastAPI app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
