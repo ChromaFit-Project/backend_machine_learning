@@ -1,12 +1,36 @@
-#Importing Modules
+# Importing Modules
 import cv2
 import os
 import numpy as np
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware  # <-- Added for CORS
 import pandas as pd
 from sklearn.metrics.pairwise import euclidean_distances
 from typing import List, Dict
+
+# Initialize the FastAPI app
+app = FastAPI(
+    title="Fashion Recommendation API",
+    description="An API that detects faces, analyzes skin tone, and provides clothing color recommendations.",
+    version="2.0.0"
+)
+
+# --- CORS Configuration ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "*",  # Allow any origin (public use)
+        "https://dvaltor.com", 
+        "https://app.dvaltor.com"
+    ],
+    allow_credentials=False,  # Must be False when allow_origins includes "*"
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# --- End CORS ---
+
+# --- DNN Model Setup ---
 
 prototxt_path = "./Models/deploy.prototxt.txt"
 model_path = "./Models/res10_300x300_ssd_iter_140000.caffemodel"
