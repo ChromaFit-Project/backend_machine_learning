@@ -1,4 +1,4 @@
-# Importing Modules
+# Import Required Modules
 import cv2
 import os
 import numpy as np
